@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "teddy",
+    "maine",
+    "ragdoll",
+]

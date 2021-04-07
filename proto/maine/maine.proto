@@ -1,0 +1,18 @@
+syntax = "proto3";
+package rua.maine.v1;
+
+service MaineService {
+  rpc Online(OnlineReq) returns (OnlineRep);
+  rpc Offline(OfflineReq) returns (OfflineRep);
+}
+
+message OnlineReq {
+  uint64 id = 1;
+  string service_id = 2;
+}
+
+message OfflineReq {}
+
+message OnlineRep {}
+
+message OfflineRep {}
