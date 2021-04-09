@@ -11,8 +11,8 @@ message OnlineReq {
   string service_id = 2;
 }
 
-message OfflineReq {}
-
 message OnlineRep {}
+
+message OfflineReq { uint64 id = 1; }
 
 message OfflineRep {}

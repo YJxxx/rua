@@ -2,18 +2,25 @@ syntax = "proto3";
 
 package rua.ragdoll.v1;
 
-service RagdollService { rpc SignIn(SignReq) returns (SignReply); }
+service RagdollService { rpc SignIn(SignInReq) returns (SignInReply); }
 
 service RagdollInternalService {
   rpc VerificationToken(VerificationTokenReq) returns (VerificationTokenReply);
 }
 
-message SignReq {
-  int64 id = 1;
-  string password = 2;
+message SignInReq {
+  message Basic {
+    int64 id = 1;
+    string password = 2;
+  }
+  message Raw { bytes value = 1; }
+  oneof message {
+    Basic basic = 1;
+    Raw raw = 2;
+  }
 }
 
-message SignReply { string token = 1; }
+message SignInReply { string token = 1; }
 
 message VerificationTokenReq { string token = 1; }
 

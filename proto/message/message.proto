@@ -2,7 +2,7 @@ syntax = "proto3";
 package rua.message.v1;
 import "google/protobuf/timestamp.proto";
 
-message Msg {
+message Message {
   fixed64 uid = 1;
   string content = 2;
   google.protobuf.Timestamp create_time = 3;
