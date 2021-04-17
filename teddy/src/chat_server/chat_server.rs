@@ -1,4 +1,5 @@
 use actix::prelude::*;
+use uuid::Uuid;
 
 use crate::{pb::maine::maine_service_client::MaineServiceClient, rpc};
 
@@ -24,7 +25,7 @@ pub struct ChatServer {
 impl ChatServer {
     pub fn new(nats: nats::Connection, rpc: rpc::Client) -> ChatServer {
         ChatServer {
-            id: "".into(), //TODO:
+            id: Uuid::new_v4().to_string(),
             sessions: HashMap::new(),
             rooms: HashMap::new(),
             nats,

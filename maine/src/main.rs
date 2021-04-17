@@ -31,7 +31,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let nc = nats::connect(cfg.nats.url.as_str()).unwrap();
 
-    let consumer = Client::new(nc.clone(), rpc.clone());
+    let redis = redis::Client::open(cfg.redis.url.as_str()).unwrap();
+
+    let consumer = Client::new(nc.clone(), rpc.clone(), redis.clone());
 
     let (tx, rx) = oneshot::channel();
     tokio::spawn(async {
@@ -40,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
     consumer.start().await;
     Server::builder()
-        .add_service(srv::new_srv(db, rpc, nc).await)
+        .add_service(srv::new_srv(db, rpc, nc, redis).await)
         .serve_with_shutdown(cfg.service.addr.parse().unwrap(), async {
             rx.await.ok();
         })

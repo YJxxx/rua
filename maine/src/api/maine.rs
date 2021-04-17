@@ -1,24 +1,22 @@
-use crate::model;
 use crate::pb::{self, maine_service_server::MaineService};
+use crate::{model, service};
 
-use redis::{aio::MultiplexedConnection, RedisResult};
+use redis::Value as RV;
+use redis::{aio::MultiplexedConnection, AsyncCommands};
 use tonic::{Request, Response, Status};
-
-use std::collections::{BTreeMap, BTreeSet};
-use std::collections::{HashMap, HashSet};
-use std::thread::{sleep, spawn};
-use std::time::Duration;
-
 pub struct Maine {
     model: model::Maine,
     nc: nats::Connection,
+    redis: redis::Client,
 }
 
 impl Maine {
-    pub fn builder(model: model::Maine, nc: nats::Connection) -> Self {
-        Maine { model, nc }
+    pub fn builder(model: model::Maine, nc: nats::Connection, redis: redis::Client) -> Self {
+        Maine { model, nc, redis }
     }
 }
+
+static ONLINE: &'static str = "online";
 
 #[tonic::async_trait]
 impl MaineService for Maine {
@@ -26,13 +24,32 @@ impl MaineService for Maine {
         &self,
         request: Request<pb::OnlineReq>,
     ) -> Result<Response<pb::OnlineRep>, Status> {
-        todo!()
+        let request = request.get_ref();
+        return match self.redis.get_async_connection().await {
+            Ok(mut con) => {
+                match con
+                    .hset::<&str, u64, String, RV>(ONLINE, request.id, request.service_id.clone())
+                    .await
+                {
+                    Ok(_) => Ok(Response::new(pb::OnlineRep {})),
+                    Err(err) => Err(tonic::Status::internal("")),
+                }
+            }
+            Err(_) => Err(tonic::Status::internal("")),
+        };
     }
 
     async fn offline(
         &self,
         request: Request<pb::OfflineReq>,
     ) -> Result<Response<pb::OfflineRep>, Status> {
-        todo!()
+        let request = request.get_ref();
+        return match self.redis.get_async_connection().await {
+            Ok(mut con) => match con.hdel::<&str, u64, RV>(ONLINE, request.id).await {
+                Ok(_) => Ok(Response::new(pb::OfflineRep {})),
+                Err(err) => Err(tonic::Status::internal("")),
+            },
+            Err(_) => Err(tonic::Status::internal("")),
+        };
     }
 }

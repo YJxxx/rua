@@ -16,16 +16,7 @@ pub async fn new_srv(
     db: db::DB,
     rpc: rpc::Client,
     nc: nats::Connection,
+    redis: redis::Client,
 ) -> MaineServiceServer<api::Maine> {
-    MaineServiceServer::with_interceptor(
-        api::Maine::builder(model::Maine::builder(db), nc),
-        intercept,
-    )
-}
-
-fn intercept(req: tonic::Request<()>) -> Result<tonic::Request<()>, tonic::Status> {
-    let mut req = req;
-    // req.metadata_mut()
-    //     .insert("uid", "296347955659538975".parse().unwrap());
-    Ok(req)
+    MaineServiceServer::new(api::Maine::builder(model::Maine::builder(db), nc, redis))
 }
